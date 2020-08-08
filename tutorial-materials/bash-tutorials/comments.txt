@@ -1,0 +1,6 @@
+@BUG: This is wrong, and needs to be fixed before merging. Else, I need a reason why
+@OUGHTTO: This will eventually be a problem down the road. File a ticket and add a comment in the code to address this later
+@MAYBE: There may be a better way to do this, if you have time and want to address it
+@NIT: This is a nit-picking, personal issue that I have. Need it not bother you
+@GUIDELINES: This does follow coding standard
+@KUDOS: Congrats! This work looks really well done

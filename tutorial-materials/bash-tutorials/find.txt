@@ -1,0 +1,13 @@
+user@bash: find /home -size +200M -exec ls -sh {} \;
+452M /home/barry/backups/everything.tar.gz
+941M /home/lisa/projects/loony/servermigration.tar.gz
+768M /home/mark/Documents/gregs_birthday.mpg
+...
+user@bash: 
+
+"""
+find is the program we are running.
+/home is the directory to find in. By default it is a recursive search.
+-size is a search option. Here we are saying find any files which are greater in size ( + ) than 200Mb. There are many search options and you can list as many as you like here. Find will list all files which match all of the given search options.
+-exec tells find to execute the following command for each file it finds. Substitute {} for the actual file found. We end the exec option with ; but we have to put a \ in front of it to escape it's normal meaning on the command line. Find will list the files found in it's normal behaviour but we were also interested in seeing their sizes so we added this last bit to get nicer output.
+"""

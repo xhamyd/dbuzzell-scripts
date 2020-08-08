@@ -1,0 +1,52 @@
+ ________________________________________________________________________
+|  Symbolic   |  Octal   |                      | People                 |
+|  Notation   | Notation | English Permissions  | Affected               |
+|_____________|__________|______________________|________________________|
+| ----------  |   0000   | none                 | ALL                    |
+| -rwx------  |   0700   | read, write, execute | owner                  |
+| -rwxrwx---  |   0770   | read, write, execute | owner, group           |
+| -rwxrwxrwx  |   0777   | read, write, execute | owner, group, others   |
+| ---x--x--x  |   0111   | execute              | owner, group, others   |
+| --w--w--w-  |   0222   | write                | owner, group, others   |   
+| --wx-wx-wx  |   0333   | write, execute       | owner, group, others   |
+| -r--r--r--  |   0444   | read                 | owner, group, others   |
+| -r-xr-xr-x  |   0555   | read, execute        | owner, group, others   |
+| -rw-rw-rw-  |   0666   | read, write          | owner, group, others   | 
+
+| -rwxr-----  |   0740   | read, write, execute | owner                  |
+|             |          | read                 | group                  |
+|             |          | none                 | others                 |
+ 
+| dr-x------  |   0500   | read, execute        | owner                  |
+| (directory) |          |                      |                        |
+
+| crw-rw-r--  |   0664   | read, write          | owner, group           |
+| (character  |          | read                 | others                 |
+|    file)    |          |                      |                        | 
+|________________________________________________________________________|
+
+
+Use `ls -l` to see symbolic notation
+Use `stat -c "%a" <filename>` to see octal notation
+
+chmod [u,g,o][+,-,=][r,w,x] <filename>
+(Ex. chmod ugo+rwx cleantrack)
+
+u: owner (file's owner)
+g: group (members of the file's group)
+o: others (everyone else)
+a: all (equivalent to ugo)
+
++: adds modes
+-: removes modes
+=: use only these exact modes
+
+r: read
+w: write
+x: execute
+
+SPECIAL EXECUTE (+X):
+chmod -R u=rwX,g=rX,o=rX testdir/
+  * all directories recursive are made executable (so they can be entered)
+	* all files with an executable bit already are made executable
+	* all regular files without an executable bit are not made executable
