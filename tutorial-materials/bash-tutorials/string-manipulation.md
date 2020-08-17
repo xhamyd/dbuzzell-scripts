@@ -25,7 +25,7 @@
 | If `variable` not set, return `value`, else `variable` | `${variable-value}` |
 | If `variable` not set or empty, return `value`, else `variable` | `${variable:-value}` |
 | If `variable` set, return `value`, else null string | `${variable+value}` |
-| If `variable` set <em>and</em> not empty, return `value`, else null string | `${variable:+value}`|
+| If `variable` set and not empty, return `value`, else null string | `${variable:+value}`|
 
 | Extraction | |
 | --- | --- |

@@ -1,0 +1,11 @@
+Generate core files in gdb/gdbserver: generate-core-file
+
+If your process crashed but process hasn't exited yet:
+`pidof my_process`  # outputs the pid number
+gdbserver --attach :3333 <pid #>
+
+(gdb) info threads
+(gdb) thread <#>
+
+(gdb) bt full
+(gdb) frame <#>

@@ -1,0 +1,189 @@
+C0102: Black listed name "%s"
+C0103: Invalid %s name "%s"
+C0111: Missing %s docstring
+C0112: Empty %s docstring
+C0121: Missing required attribute "%s"
+C0202: Class method %s should have cls as first argument
+C0203: Metaclass method %s should have mcs as first argument
+C0204: Metaclass class method %s should have %s as first argument
+C0301: Line too long (%s/%s)
+C0302: Too many lines in module (%s)
+C0303: Trailing whitespace
+C0304: Final newline missing
+C0321: More than one statement on a single line
+C0322: Old: Operator not preceded by a space
+C0323: Old: Operator not followed by a space
+C0324: Old: Comma not followed by a space
+C0325: Unnecessary parens after %r keyword
+C0326: %s space %s %s %s\n%s
+C1001: Old-style class defined.
+E0001: (syntax error raised for a module; message varies)
+E0011: Unrecognized file option %r
+E0012: Bad option value %r
+E0100: __init__ method is a generator
+E0101: Explicit return in __init__
+E0102: %s already defined line %s
+E0103: %r not properly in loop
+E0104: Return outside function
+E0105: Yield outside function
+E0106: Return with argument inside generator
+E0107: Use of the non-existent %s operator
+E0108: Duplicate argument name %s in function definition
+E0202: An attribute affected in %s line %s hide this method
+E0203: Access to member %r before its definition line %s
+E0211: Method has no argument
+E0213: Method should have "self" as first argument
+E0221: Interface resolved to %s is not a class
+E0222: Missing method %r from %s interface
+E0235: __exit__ must accept 3 arguments: type, value, traceback
+E0501: Old: Non ascii characters found but no encoding specified (PEP 263)
+E0502: Old: Wrong encoding specified (%s)
+E0503: Old: Unknown encoding specified (%s)
+E0601: Using variable %r before assignment
+E0602: Undefined variable %r
+E0603: Undefined variable name %r in __all__
+E0604: Invalid object %r in __all__, must contain only strings
+E0611: No name %r in module %r
+E0701: Bad except clauses order (%s)
+E0702: Raising %s while only classes, instances or string are allowed
+E0710: Raising a new style class which doesn't inherit from BaseException
+E0711: NotImplemented raised - should raise NotImplementedError
+E0712: Catching an exception which doesn\'t inherit from BaseException: %s
+E1001: Use of __slots__ on an old style class
+E1002: Use of super on an old style class
+E1003: Bad first argument %r given to super()
+E1004: Missing argument to super()
+E1101: %s %r has no %r member
+E1102: %s is not callable
+E1103: %s %r has no %r member (but some types could not be inferred)
+E1111: Assigning to function call which doesn't return
+E1120: No value passed for parameter %s in function call
+E1121: Too many positional arguments for function call
+E1122: Old: Duplicate keyword argument %r in function call
+E1123: Passing unexpected keyword argument %r in function call
+E1124: Parameter %r passed as both positional and keyword argument
+E1125: Old: Missing mandatory keyword argument %r
+E1200: Unsupported logging format character %r (%#02x) at index %d
+E1201: Logging format string ends in middle of conversion specifier
+E1205: Too many arguments for logging format string
+E1206: Not enough arguments for logging format string
+E1300: Unsupported format character %r (%#02x) at index %d
+E1301: Format string ends in middle of conversion specifier
+E1302: Mixing named and unnamed conversion specifiers in format string
+E1303: Expected mapping for format string, not %s
+E1304: Missing key %r in format string dictionary
+E1305: Too many arguments for format string
+E1306: Not enough arguments for format string
+E1310: Suspicious argument in %s.%s call
+F0001: (error prevented analysis; message varies)
+F0002: %s: %s (message varies)
+F0003: ignored builtin module %s
+F0004: unexpected inferred value %s
+F0010: error while code parsing: %s
+F0202: Unable to check methods signature (%s / %s)
+F0220: failed to resolve interfaces implemented by %s (%s)
+F0321: Old: Format detection error in %r
+F0401: Unable to import %s
+I0001: Unable to run raw checkers on built-in module %s
+I0010: Unable to consider inline option %r
+I0011: Locally disabling %s
+I0012: Locally enabling %s
+I0013: Ignoring entire file
+I0014: Used deprecated directive "pylint:disable-all" or "pylint:disable=all"
+I0020: Suppressed %s (from line %d)
+I0021: Useless suppression of %s
+I0022: Deprecated pragma "pylint:disable-msg" or "pylint:enable-msg"
+R0201: Method could be a function
+R0401: Cyclic import (%s)
+R0801: Similar lines in %s files
+R0901: Too many ancestors (%s/%s)
+R0902: Too many instance attributes (%s/%s)
+R0903: Too few public methods (%s/%s)
+R0904: Too many public methods (%s/%s)
+R0911: Too many return statements (%s/%s)
+R0912: Too many branches (%s/%s)
+R0913: Too many arguments (%s/%s)
+R0914: Too many local variables (%s/%s)
+R0915: Too many statements (%s/%s)
+R0921: Abstract class not referenced
+R0922: Abstract class is only referenced %s times
+R0923: Interface not implemented
+W0101: Unreachable code
+W0102: Dangerous default value %s as argument
+W0104: Statement seems to have no effect
+W0105: String statement has no effect
+W0106: Expression "%s" is assigned to nothing
+W0107: Unnecessary pass statement
+W0108: Lambda may not be necessary
+W0109: Duplicate key %r in dictionary
+W0110: map/filter on lambda could be replaced by comprehension
+W0120: Else clause on loop without a break statement
+W0121: Use raise ErrorClass(args) instead of raise ErrorClass, args.
+W0122: Use of exec
+W0141: Used builtin function %r
+W0142: Used * or ** magic
+W0150: %s statement in finally block may swallow exception
+W0199: Assert called on a 2-uple. Did you mean \'assert x,y\'?
+W0201: Attribute %r defined outside __init__
+W0211: Static method with %r as first argument
+W0212: Access to a protected member %s of a client class
+W0221: Arguments number differs from %s method
+W0222: Signature differs from %s method
+W0223: Method %r is abstract in class %r but is not overridden
+W0231: __init__ method from base class %r is not called
+W0232: Class has no __init__ method
+W0233: __init__ method from a non direct base class %r is called
+W0234: iter returns non-iterator
+W0301: Unnecessary semicolon
+W0311: Bad indentation. Found %s %s, expected %s
+W0312: Found indentation with %ss instead of %ss
+W0331: Use of the <> operator
+W0332: Use of "l" as long integer identifier
+W0333: Use of the `` operator
+W0401: Wildcard import %s
+W0402: Uses of a deprecated module %r
+W0403: Relative import %r, should be %r
+W0404: Reimport %r (imported line %s)
+W0406: Module import itself
+W0410: __future__ import is not the first non docstring statement
+W0511: (warning notes in code comments; message varies)
+W0512: Cannot decode using encoding "%s", unexpected byte at position %d
+W0601: Global variable %r undefined at the module level
+W0602: Using global for %r but no assigment is done
+W0603: Using the global statement
+W0604: Using the global statement at the module level
+W0611: Unused import %s
+W0612: Unused variable %r
+W0613: Unused argument %r
+W0614: Unused import %s from wildcard import
+W0621: Redefining name %r from outer scope (line %s)
+W0622: Redefining built-in %r
+W0623: Redefining name %r from %s in exception handler
+W0631: Using possibly undefined loop variable %r
+W0632: Possible unbalanced tuple unpacking with sequence%s: …
+W0633: Attempting to unpack a non-sequence%s
+W0701: Raising a string exception
+W0702: No exception type(s) specified
+W0703: Catching too general exception %s
+W0704: Except doesn't do anything
+W0710: Exception doesn't inherit from standard "Exception" class
+W0711: Exception to catch is the result of a binary "%s" operation
+W0712: Implicit unpacking of exceptions is not supported in Python 3
+W1001: Use of "property" on an old style class
+W1111: Assigning to function call which only returns None
+W1201: Specify string format arguments as logging function parameters
+W1300: Format string dictionary key should be a string, not %s
+W1301: Unused key %r in format string dictionary
+W1401: Anomalous backslash in string: \'%s\'. String constant might be missing an r prefix.
+W1402: Anomalous Unicode escape in byte string: \'%s\'. String constant might be missing an r or u prefix.
+W1501: "%s" is not a valid mode for open.
+
+RP0001: Messages by category
+RP0002: % errors / warnings by module
+RP0003: Messages
+RP0004: Global evaluation
+RP0101: Statistics by type
+RP0401: External dependencies
+RP0402: Modules dependencies graph
+RP0701: Raw metrics
+RP0801: Duplication
