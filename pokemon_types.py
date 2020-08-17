@@ -150,6 +150,6 @@ def best_moves_against(*args):
     return best_types_against(*args, moves_only=True)
 
 
-types = "poison", "flying"
+types = "water", "ice"
 print(best_types_against(*types))
 print(best_moves_against(*types))

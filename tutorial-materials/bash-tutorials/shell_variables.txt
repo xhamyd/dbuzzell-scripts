@@ -1,0 +1,386 @@
+=====================================================
+Shell Variables you should know (including $* and $@)
+=====================================================
+-IAN! idallen@idallen.ca
+
+One of the things the Unix shell does is let you define variables that
+can contain text (or numbers) that you can insert into your command
+lines and in shell scripts.
+
+Unless you protect your command line using single quotes or backslashes,
+the shell will find variables by looking for dollar signs, even inside
+double-quoted strings:
+
+    $ x=hello
+    $ echo "the variable x contains $x"
+    the variable x contains hello
+    $ echo "protect the dollar using backslash \$x"
+    protect the dollar using backslash $x
+    $ echo 'protect the dollar using single quotes $x'
+    protect the dollar using single quotes $x
+
+Unless your shell (or shell script) is running with the "-u" flag,
+undefined variables are not an error and simply expand to be nothing:
+
+    $ echo "this is $nosuchvariable expanding"
+    this is  expanding
+    $ /bin/bash -u
+    bash$ echo "this is $nosuchvariable expanding"
+    bash: nosuchvariable: unbound variable
+    bash$ exit
+
+Always use "-u" in your shell scripts:  #!/bin/sh -u
+
+Variable definitions can be local to the current shell process, or they
+can be exported (using the "export" built-in command) to the "environment"
+of child processes:
+
+    $ x=foo                 # define a local variable named x containing foo
+    $ /bin/bash             # start a child process (another shell)
+    bash$ echo "see x $x"
+    see x                   # variable x was not exported to child environment
+    bash$ exit
+    $ export x              # export the variable
+    $ /bin/bash             # start a child process (another shell)
+    bash$ echo "see x $x"
+    see x foo               # variable x was exported; value is inherited
+
+Exported variables are also called "environment" variables; since,
+they are part of the starting environment of a new child process.
+
+As with anything that is local to a process (also including such things
+as umask and current directory), setting a variable in a child process
+does not affect any parent processes.  Parent processes cannot inherit
+shell variable values from child processes.
+
+When you log in to a Unix system, your login shell has many variables
+already set for you.  Some of these variables are local to your login
+shell; many are already exported to any child processes you start from
+the shell.  Typing "set" with no arguments lists all the variables
+(local and exported) and their current values.  Typing "printenv" or
+"env" with no arguments lists only environment (exported) variables.
+
+    $ set | wc
+         85     108    1697
+    $ printenv | wc
+         40      45     876
+
+Once a child process has taken a copy into its environment of all exported
+variables, the parent process has no more effect.  Changing a variable
+in a parent process will not change the value in an already-running
+child process.  (New child processes will get a copy of the new value
+at the time the new process is started.)
+
+----------------------------
+Double-quote your variables!
+----------------------------
+
+You must remember to put double quotes around any shell variables that
+might contain shell metacharacters, otherwise the metacharacters will
+be expanded by the shell and the result may not be what you want.
+
+    $ x='*'                    # x contains an asterisk (GLOB character)
+
+    $ echo "$x"                # remember to double-quote the variable
+    *                          # GLOB character does not expand (good!)
+
+    $ echo $x                  # unquoted variable is not safe!
+    a b file gar.h             # GLOB character expands (bad bad bad!)
+
+    $ test "$x" = "*"          # double-quoted variable is safe to use
+    $ echo $?
+    0
+
+    $ test $x = "*"            # unquoted variable causes errors!
+    test: too many arguments   # GLOB character expands (bad bad bad!)
+
+    $ msg='* warning *'        # set a prefix for a warning message
+    $ echo "$msg test"         # double-quoted variable is safe to use
+    * warning * test           # GLOB characters do not expand (good!)
+    $ echo $msg test           # unquoted variable is not safe!
+    a b file gar.h warning a b file gar.h test  # GLOB characters expand (bad!)
+
+Always put double-quotes around variables.
+
+(You don't actually need to put double-quotes around variables that
+are always numbers (e.g. $#, $$, $?), since numbers don't cause shell
+expansion problems; but, if you always double-quote all your variables,
+you won't get caught forgetting.)
+
+-------------------------
+Variables you should know
+-------------------------
+
+You should know the meaning of the following shell variables:
+
+    $TERM
+    $HOME
+    $PATH
+    $SHELL
+    $USER
+    $$
+    $#
+    $0
+    $?
+    $1, $2, ...
+    $*
+    $@
+
+$TERM:
+    Set during login to contain the Unix name of the type of your
+    terminal.  Common values are "vt100", "xterm", "ansi", and "linux".
+    When in doubt about the type of terminal you are on, set TERM to
+    "vt100".  Don't use vi or vim without having a correct $TERM set.
+
+$HOME:
+    Set during login to be the absolute path to your home directory.
+    The shell alias "~" is a synonym for $HOME if used at the start of
+    a pathname, e.g. ~/foo is the same as $HOME/foo
+    (Note: ~userid at the start of a pathname is expanded by the shell
+    to be the home directory of the userid "userid", e.g. ~idallen .)
+
+$PATH:
+    Set during login to be a colon-separated list of directories in
+    which the shell will look when it tries to find an executable file
+    that matches a command name.  $PATH is not used if the command name
+    you type already contains any slashes.  The "which" command looks
+    for a command name in your $PATH.
+
+$SHELL:
+    Set during login to be the pathname of the Unix Shell you are
+    assigned in the password file (/etc/passwd).  (This may or may not
+    be the shell you are currently running, since you are free to start
+    other shells once you have logged in.
+
+$USER:
+    Set during login to be your account name, e.g. abcd0001.
+    Some systems set $LOGNAME instead of $USER.
+
+$$:
+    The process ID of the current shell.  This is often used when
+    creating unique temporary file names, e.g.:  tmp=/tmp/tempfile$$
+
+$#:
+    The count of command line arguments given to the currently
+    executing shell (usually used inside a shell script).
+
+$0:
+    The name of the currently executing shell script.
+
+$?:
+    The return status of the most recently executed command.
+
+$1, $2, ...:
+    The individual command line arguments given to the currently
+    executing shell script.
+
+$*:
+    All the command-line arguments given to the currently executing
+    shell script.  The arguments are each separated by one blank.
+
+$@:
+    All the command-line arguments given to the currently executing
+    shell script.  When this variable is used inside double quotes, it
+    becomes a list of all the command-line arguments each individually
+    double-quoted - this is the only time that a double-quoted string
+    generates more than one argument.  See the next section for more
+    detail on how this works.
+
+-----------------------------------
+Command line arguments in $* and $@
+-----------------------------------
+
+The variables $* and $@ both contain a list of all the arguments passed
+to the shell script on the command line (if any).
+
+The double-quoted string "$*" is always treated as one argument, like
+most quoted strings.  It contains the expanded text of all of the command
+line arguments separated by single blanks, all as one single argument.
+
+The double-quoted string "$@" is an exception and special case; even
+when double-quoted it can expand to be many individually double-quoted
+arguments, one for each command line argument to the current script.
+This is the *only* exception and only time where a double-quoted string
+becomes more than one argument.
+
+We will use the "argv" program that displays its own command line
+arguments to illustrate the difference between "$*" ad "$@" in a shell
+script.  Consider this test script named "foo" that passes its arguments
+to the argv program:
+
+    #!/bin/sh -u
+    # "$*" bundles all the command-line arguments into a single string
+    argv "$*"
+
+When executed inside the "foo" script, the argv program displays how
+many arguments it received:
+
+    $ ./foo a b c
+    Argument 0 is [/home/idallen/bin/argv]
+    Argument 1 is [a b c]
+
+The string "$*" expanded to be one single argument containing all the
+command line arguments.
+
+Now consider this test script named "bar" using the $@ variable:
+
+    #!/bin/sh -u
+    # "$@" keeps all the command-line arguments as separate strings
+    argv "$@"
+
+When "bar" is executed, argv shows a different output for "$@" than "$*":
+
+    $ ./bar a b c
+    Argument 0 is [/home/idallen/bin/argv]
+    Argument 1 is [a]
+    Argument 2 is [b]
+    Argument 3 is [c]
+
+This time, the argv program shows that the double-quoted string "$@"
+expanded to be three *separate* arguments.
+
+Script writers use "$@" to pass individual arguments to other commands
+inside a shell script.  For example, if you wanted to write a shell
+script named "mycopy.sh" that worked like the Unix "cp" program but
+always turned on the "-p" (preserve modify time) flag, you might try this:
+
+    #!/bin/sh -u
+    # call copy with the -p option
+    cp -p "$*"     # WRONG WRONG WRONG USE of $*
+
+When executed:
+
+    $ ./mycopy.sh a b
+    cp: missing destination file
+
+The problem is that, when you use the double-quoted "$*" as the
+argument to the "cp" command, "cp" is receiving only a single string,
+one argument. The incorrect line in the script:
+
+    cp -p "$*"     # WRONG WRONG WRONG USE of $*
+
+has the variable $* expanded by the shell and becomes:
+
+    cp -p "a b"
+
+and the copy command only gets a single pathname argument.  The copy
+command needs *two* arguments - a source and a destination.  Here is
+the fix, using a double-quoted "$@":
+
+    #!/bin/sh -u
+    # call copy with the -p option
+    cp -p "$@"     # RIGHT USE of $@
+
+The above is correct and generates no error message:
+
+    $ ./mycopy.sh a b
+    $
+
+Using "$@", the "cp" command inside the script receives individually
+quoted command line arguments from the special expansion of "$@".
+The line in the script:
+
+    cp -p "$@"     # RIGHT USE of $@
+
+has the variable $@ specially expanded by the shell and becomes:
+
+    cp -p "a" "b"
+
+and the copy command correctly receives two pathnames.  Unlike "$*",
+the double-quoted "$@" expands to be multiple double-quoted arguments.
+"$@" is the only double-quoted string that is expanded by the shell to
+be multiple arguments.  All other quoted strings are a single argument.
+
+Always use "$@" when you wish to pass on the individual command line
+arguments to a command inside a shell script.  Only use "$*" if you want
+all the command line arguments bundled together into a single string
+(as you might do in an error message).
+
+Note: Some shell programmers think they can solve the "$*" problem by
+removing the double quotes from around $* and using that inside a shell
+script.  Without double quotes, both $* and $@ expand to be individual
+command line arguments; however, without the double quotes for protection,
+any GLOB wildcard characters or blanks contained in those arguments are
+also seen and acted on by the shell, and chaos results:
+
+    #!/bin/sh -u
+    # call copy with the -p option
+    cp -p $*     # WRONG WRONG WRONG USE of $* without quotes!
+
+When executed with a command line argument containing a blank, the
+blank is unprotected inside the script (because of the lack of quotes)
+and the script fails:
+
+    $ ./mycopy.sh  "my file"  newfile
+    cp: copying multiple files, but last argument `newfile' is not a directory
+
+The incorrect line in the script:
+
+    cp -p $*     # WRONG WRONG WRONG USE of $* without quotes!
+
+has the variable $* expanded by the shell and becomes:
+
+    cp -p my file newfile
+
+and the copy command incorrectly receives *three* arguments, not two.
+Had any of the command-line arguments contained GLOB characters, they
+would also be expanded, causing more chaos.
+
+The only safe way to use variables in a script is by surrounding them
+with double-quotes to protect their contents from further expansion by
+the shell.  The only safe way to pass individual command line arguments
+inside a shell script is to use a double-quoted "$@" that expands to
+be separate double-quoted arguments.
+
+---------------------------------
+Using $* and $@ with no arguments
+---------------------------------
+
+If you are a careful shell script writer, you always write your shell
+scripts to execute using the "-u" (check for undefined variables) flag.
+This can have unintended effects when using the $* and $@ variables that
+expand to be a list of command line arguments, if there are no command
+line arguments passed to the script.
+
+Let's look at this two-line script named "enter.sh":
+
+    #!/bin/sh -u
+    echo "You entered: '$*'"
+
+If you pass no command line arguments to the script, the variables $*
+and $@ have no values.  The bash shell (standard on Linux) treats the
+variables $* and $@ as being defined but empty.  Using $* or $@ with no
+arguments simply results in an empty string:
+
+    $ ./enter.sh
+    You entered: ''
+
+On most proprietary Unix systems, the default shell is not the open-source
+bash shell.  Other Bourne-style shells treat the variables $* and $@
+as being *undefined* if there are no command line arguments, and this
+causes an error when running the script under "-u";
+
+    $ ./enter.sh
+    ./enter.sh: *: parameter not set
+
+If you execute the script without the "-u" option, you avoid the error
+message; because, the undefined variable is no longer detected as
+an error by the shell:
+
+    $ /bin/sh enter.sh
+    You entered: ''
+
+We don't want to stop using "-u" to check for undefined variables.
+To make the script work "everywhere" without modification, we need to
+add a bit of shell syntax to cope with the case where the variables $*
+or $@ may be treated as undefined by the shell:
+
+    #!/bin/sh -u
+    echo "You entered: '${*-}'"
+
+The variable syntax ${*-} tells the shell to substitute an empty string
+if the variable $* is undefined.  Using this syntax will allow your
+script to work using "-u" on all versions of Unix, not just on Linux.
+
+(You must use -u in your scripts so that your typing mistakes are caught
+by the shell; otherwise, mis-spelled variables will go undetected.)
