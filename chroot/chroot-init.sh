@@ -3,7 +3,8 @@
 function install_terminology {
     sudo apt install terminology
     gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/terminology
-    gsettings set org.gnome.desktop.default-applications.terminal exec-arg "-x"
+    # Pretty sure this doesn't work anymore...
+    #gsettings set org.gnome.desktop.default-applications.terminal exec-arg "-x"
 }
 
 function install_emacs {
@@ -15,8 +16,12 @@ function write_aliases {
 }
 
 function write_update {
-    sudo echo -e 'sudo apt update\nsudo apt upgrade\nsudo apt full-upgrade\nsudo apt autoclean\nsudo apt clean\nsudo apt autoremove' > /usr/bin/update.sh
+    echo -e 'sudo apt update\nsudo apt upgrade\nsudo apt full-upgrade\nsudo apt autoclean\nsudo apt clean\nsudo apt autoremove' | sudo tee /usr/bin/update.sh
     sudo chmod +x /usr/bin/update.sh
+    # Make setup run automatically on startup!
+    #   1. Go to Settings > Startup Applications
+    #   2. Create new job with the following command:
+    #       - `xterm -maximize -e /usr/bin/update.sh`
 }
 
 function setup_bashrc {
@@ -66,8 +71,8 @@ function switch_on_input {
 	echo "Installing nothing extra"
     else
 	echo "Use coding, music, gaming, or nothing as second parameter?"
-	read varname
-	switch_on_input varname
+	read -r varname
+	switch_on_input "$varname"
     fi
 }
 

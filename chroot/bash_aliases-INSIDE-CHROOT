@@ -1,0 +1,8 @@
+#!/bin/bash
+
+alias emacs='emacs -nw'
+alias update="usr/bin/update.sh"
+alias logout="gnome-session-quit --force"
+
+# for Game Chroot Only
+alias minecraft="java -jar /home/dbuzzell/Games/Minecraft/Minecraft.jar"

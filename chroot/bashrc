@@ -30,9 +30,17 @@ function which_device {
     echo "Command to Enter Chroot: startcode"
   elif [[ "$chroot" == "GameChroot" ]]; then
     echo "Command to Enter Chroot: startgame"
-  elif [[ "$chroot" == "Music Chroot" ]]; then
+  elif [[ "$chroot" == "MusicChroot" ]]; then
     echo "Command to Enter Chroot: startmusic"
   else
-    echo $chroot
+    echo "Command to Enter Chroot: startgparted"
   fi
+}
+
+function delete_chroot {
+  local chroot=$(ls /media/removable)
+  if [[ "chroot" == "MusicChroot" ]]; then
+    sudo sh /media/removable/MusicChroot/bin/delete-chroot chroot-music
+  fi
+  # TODO: the rest of the chroots
 }
