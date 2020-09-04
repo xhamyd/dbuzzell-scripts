@@ -39,8 +39,16 @@ function which_device {
 
 function delete_chroot {
   local chroot=$(ls /media/removable)
-  if [[ "chroot" == "MusicChroot" ]]; then
+  if [[ "$chroot" == "MusicChroot" ]]; then
     sudo sh /media/removable/MusicChroot/bin/delete-chroot chroot-music
+  fi
+  # TODO: the rest of the chroots
+}
+
+function update_chroot {
+  local chroot=$(ls /media/removable)
+  if [[ "$chroot" == "CodingChroot" ]]; then
+    sudo sh ~/Downloads/crouton -p /media/removable/CodingChroot -u -n chroot-coding
   fi
   # TODO: the rest of the chroots
 }

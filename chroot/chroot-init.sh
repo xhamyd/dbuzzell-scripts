@@ -39,13 +39,13 @@ function y_ppa_manager {
 }
 
 function apt_installs {
-    sudo apt install localepurge firefox fonts-lyx k4dirstat software-properties-common software-properties-gtk curl ttf-ubuntu-font-family ttf-mscorefonts-installer
+    sudo apt install localepurge firefox fonts-lyx k4dirstat software-properties-common software-properties-gtk curl ttf-ubuntu-font-family ttf-mscorefonts-installer git
     y_ppa_manager
 }
 
 function coding_installs {
     echo "Doing coding installs"
-    sudo apt install python python3 default-jdk ruby-full atom puredata libreoffice
+    sudo apt install python3 default-jdk ruby-full puredata libreoffice
 }
 
 function music_installs {
@@ -60,19 +60,26 @@ function gaming_installs {
     echo "Go to Software Centre to install: VBA Express"
 }
 
+function gparted_installs {
+    echo "Doing e17 installs"
+    sudo apt install gparted hfsprogs
+}
+
 function switch_on_input {
     if [ "$1" == "coding" ]; then
-	coding_installs
+	      coding_installs
     elif [ "$1" == "music" ]; then
-	music_installs
+	      music_installs
     elif [ "$1" == "gaming" ]; then
-	gaming_installs
+	      gaming_installs
+    elif [ "$1" == "gparted" ]; then
+        gparted_installs
     elif [ "$1" == "nothing" ]; then
-	echo "Installing nothing extra"
+	      echo "Installing nothing extra"
     else
-	echo "Use coding, music, gaming, or nothing as second parameter?"
-	read -r varname
-	switch_on_input "$varname"
+	      echo "Use coding, music, gaming, gparted, or nothing as second parameter?"
+	      read -r varname
+	      switch_on_input "$varname"
     fi
 }
 
