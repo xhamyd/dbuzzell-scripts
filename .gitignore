@@ -1,2 +1,5 @@
 # Pycharm's configuration files
 /.idea/**/*
+
+# Python temp files
+__pycache__
