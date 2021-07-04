@@ -48,32 +48,40 @@ _DEFAULT_MIN_VELCOLOR = 48
 MIN_VELCOLOR = _DEFAULT_MIN_VELCOLOR // (2 if sense.low_light else 1)
 
 print("Opening devices...")
-with mido.open_input(input_name) as inport, mido.open_output(output_name) as outport:
+with mido.open_output(output_name) as outport, mido.sockets.PortServer('', 8080) as midi_server:
     print("MIDI Loopback enabled")
+    midi_client = midi_server.accept()
+    print("Client connected!")
+
     while True:
         # Launchpad documentation is one-indexed, mido is zero indexed
         # Channel 1: on
         # Channel 2: flashing
         # Channel 3: pulsing
-        msg = inport.receive()
+        if midi_client.closed:
+            print("Client disconnected!")
 
-        if hasattr(msg, 'velocity') and msg.velocity > 0:
-            msg = msg.copy(velocity=random.randint(1, 127))
-        elif hasattr(msg, 'value') and msg.value > 0:
-            msg = msg.copy(value=random.randint(1, 127))
+        outport.send(mido.Message(type="note_on"))
+        for msg in midi_client:
+            print(msg)
 
-        outport.send(msg)
+            #if hasattr(msg, 'velocity') and msg.velocity > 0:
+            #    msg = msg.copy(velocity=random.randint(1, 127))
+            #elif hasattr(msg, 'value') and msg.value > 0:
+            #    msg = msg.copy(value=random.randint(1, 127))
 
-        if re.match("^note_(?:on|off)$", msg.type):
-            #print(msg.note, "on" if msg.velocity > 0 else "off")
-            row = 8 - msg.note // 10
-            col = msg.note % 10 - 1
+            outport.send(msg)
 
-            color = LAUNCHPAD_COLORS[msg.velocity]
-            color.red = max(color.red, MIN_VELCOLOR) if color.red > 0 else 0
-            color.green = max(color.green, MIN_VELCOLOR) if color.green > 0 else 0
-            color.blue = max(color.blue, MIN_VELCOLOR) if color.blue > 0 else 0
+            if re.match("^note_(?:on|off)$", msg.type):
+                #print(msg.note, "on" if msg.velocity > 0 else "off")
+                row = 8 - msg.note // 10
+                col = msg.note % 10 - 1
 
-            if row in range(0, 8) and col in range(0, 8):  # range is [a, b) inc/exc
-                sense.set_pixel(col, row, color)  # x=col, y=row
-                print(f"row={row} col={col} color={color}")
+                color = LAUNCHPAD_COLORS[msg.velocity]
+                color.red = max(color.red, MIN_VELCOLOR) if color.red > 0 else 0
+                color.green = max(color.green, MIN_VELCOLOR) if color.green > 0 else 0
+                color.blue = max(color.blue, MIN_VELCOLOR) if color.blue > 0 else 0
+
+                if row in range(0, 8) and col in range(0, 8):  # range is [a, b) inc/exc
+                    sense.set_pixel(col, row, color)  # x=col, y=row
+                    print(f"row={row} col={col} color={color}")
