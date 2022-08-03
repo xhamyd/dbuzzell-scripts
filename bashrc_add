@@ -4,7 +4,7 @@
 export PS1='\[\033[01;32m\]\D{%A (%D) %r} [\j]:\[\033[01;34m\]\w\[\e[01;34m\]$(__git_ps1 " (%s)")\e[00m\$ '
 export GIT_PS1_SHOWDIRTYSTATE="1"
 export GIT_PS1_SHOWUPSTREAM="verbose"
-export DBUZZELL_SCRIPTS="${HOME}/git"
+export DBUZZELL_SCRIPTS="${HOME}/dbuzzell-scripts"
 
 # To prevent terminal freezing (i.e. Ctrl + s, Ctrl + q)
 stty -ixon
