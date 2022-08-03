@@ -1,8 +1,6 @@
-# TODO: this doesn't work on Ubuntu 20.04 WSL
-
 RETURN_DIR=$(pwd)
 
-cd "${GIT_DIR}" || echo "ERROR: Cannot enter ${GIT_DIR}" && exit
+cd "${DBUZZELL_GIT_DIR}" || echo "ERROR: Cannot enter ${DBUZZELL_GIT_DIR}" && exit
 
 # Source: https://unix.stackexchange.com/a/86724
 for git_dir in */; do
