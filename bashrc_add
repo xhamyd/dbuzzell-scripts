@@ -1,9 +1,10 @@
+
 . /etc/bash_completion.d/git-prompt
 # Set Git info colors
 export PS1='\[\033[01;32m\]\D{%A (%D) %r} [\j]:\[\033[01;34m\]\w\[\e[01;34m\]$(__git_ps1 " (%s)")\e[00m\$ '
 export GIT_PS1_SHOWDIRTYSTATE="1"
 export GIT_PS1_SHOWUPSTREAM="verbose"
-export GIT_DIR="${HOME}/git"
+export DBUZZELL_GIT_DIR="${HOME}"
 
 # To prevent terminal freezing (i.e. Ctrl + s, Ctrl + q)
 stty -ixon
