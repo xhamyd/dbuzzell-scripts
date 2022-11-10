@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #@REQUIRES: grip and firefox to be installed
 

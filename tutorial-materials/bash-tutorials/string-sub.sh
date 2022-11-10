@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # EXAMPLE 1
 # Simple prefix/suffix subsitution

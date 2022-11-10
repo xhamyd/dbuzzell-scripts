@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "I am a test file for conditional.sh" > exists.txt
 rm -i doesnotexist.txt

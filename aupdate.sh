@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 sudo true  # Blank command for the password prompt
 echo "APT updates..."

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 old_name="$(git rev-parse --abbrev-ref HEAD)"
 new_name="$1"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Source: https://www.cyberciti.biz/faq/linux-bash-exit-status-set-exit-statusin-bash/
 # Alternatively, use `perror <ERROR_CODE_NUM>` for error code explanation

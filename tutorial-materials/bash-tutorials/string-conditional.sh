@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ -z "" ]]; then
 	echo "Blank string is empty; checked with -z"

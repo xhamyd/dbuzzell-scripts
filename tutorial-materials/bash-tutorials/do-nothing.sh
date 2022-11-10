@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # The ':' symbol denotes a no-op
 if [ -z $1 ]; do

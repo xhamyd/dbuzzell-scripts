@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # EXAMPLE 1
 # Replace text in place, for a progress bar effect

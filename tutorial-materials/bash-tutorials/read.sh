@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # EXAMPLE 1
 # Demonstrate how read actually works
