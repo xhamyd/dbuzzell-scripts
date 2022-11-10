@@ -4,7 +4,7 @@ cd "${DBUZZELL_GIT_DIR}" || (echo "ERROR: Cannot enter ${DBUZZELL_GIT_DIR}" && e
 
 # Source: https://unix.stackexchange.com/a/86724
 for git_dir in */; do
-    cd "${git_dir}" || exit
+    cd "${git_dir}" || (echo "ERROR: Cannot enter ${git_dir}" && exit)
 
     if [ ! -d .git ]; then
 	echo "Not a valid git dir: ${git_dir}"
