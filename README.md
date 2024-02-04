@@ -17,12 +17,12 @@ some good Bash scripting that may be useful to reference.
 ### csv_filesort/
 
 This was a proof-of-concept project to sort a bunch of CSV files in nested directories. As a PoC, this script has only
-been tested with the provided `test_dir/`. I would not recommended running this on actual CSVs full of data without your
+been tested with the provided `test_dir/`. I would not recommend running this on actual CSVs full of data without your
 own testing and backups!
 
 ### pylint-research/
 
-This is an unsorted collection of my notes when researching all of the errors flagged by pylint. This was run on version
+This is an unsorted collection of my notes when researching all the errors flagged by pylint. This was run on version
 1.9, but the provided script should be able to provide the messages for your installed pylint package.
 
 ### tutorial-materials/
