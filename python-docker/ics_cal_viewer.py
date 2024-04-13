@@ -55,6 +55,8 @@ def ics_to_json(ics_filestr: str, output_filestr: str):
         event_dict: dict[str, datetime] = dict()
         for k, v in ics_dicts[s_i + 1:e_i]:
             if dt_match := re.match(r'DT(?P<field>[A-Z]+)', k):
+                # TODO: parse repeating events, with semicolons
+                # TODO: don't save DTSTAMP
                 event_dict[dt_match.group('field')] = serialize_timestamp(v)
             elif k in ("CREATED", "LAST-MODIFIED"):
                 event_dict[k] = serialize_timestamp(v)
