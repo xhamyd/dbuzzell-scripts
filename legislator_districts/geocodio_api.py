@@ -1,17 +1,35 @@
+from datetime import datetime
+from pathlib import Path
+import os
+import re
+from typing import Optional
+
+from dotenv import load_dotenv
+from openpyxl import load_workbook
 import requests
 import yaml
-from datetime import datetime
 
-GEOCODIO_API_KEY = None
+# Load environmental variables from ".env"
+load_dotenv()
+
+GEOCODIO_API_KEY = os.environ["GEOCODIO_API_KEY"]
 LEGISLATORS_YAML_URL = "https://unitedstates.github.io/congress-legislators/legislators-current.yaml"
+COORDINATES_XLSX = Path(f"./{os.environ['COORDINATES_XLSX']}")
+OUTPUT_FILE = Path("./legislators_from_latlon.txt")
+LAT_LON_REGEX = r'^(?P<lat>[\d\.-]+)\u00B0?,\s*(?P<lon>[\d\.-]+)\u00B0?$'
 
-coordinates = [
-    (36.082382, -83.331902),
-    (35.882048, -84.666805),
-    (35.387548, -86.265530),
-    (35.957485, -83.172971),
-    (35.598233, -84.534972)
-]
+
+def get_coordinates():
+    workbook = load_workbook(COORDINATES_XLSX)
+    sheet = workbook.active
+    if sheet is None:
+        raise RuntimeError(f"Failed to load worksheet {COORDINATES_XLSX}")
+
+    data = [row for row in sheet.iter_rows(min_row=2, max_row=None, min_col=2, max_col=4, values_only=True)]
+    assert data[0] == ('Project Number', 'PROJECT NAME', 'Geo Coordinates')  # assuming a fixed format for now
+    assert data[1] == (None, 'TOTAL', '-')  # extra info that we don't need
+
+    return [[row_i] + list(row[1:]) for row_i, row in enumerate(data[2:], start=1)]
 
 
 def is_current_term(term):
@@ -58,42 +76,86 @@ def get_district(lat, lon):
     }
 
     # params_str = "&".join(list(f"{k}={v}" for k, v in params.items()))
-    # print(f"{url}?{params_str}")
+    # output_text.append(f"{url}?{params_str}")
 
     response = requests.get(url, params=params)
-    if response.status_code != 200:
-        return f"Error: {response.status_code}"
-
     data = response.json()
-    cd_info = data['results'][0]['fields']['congressional_districts'][0]
-    return {
-        'state': data['results'][0]['address_components']['state'],
-        'district': cd_info['district_number'],
-        'congress': cd_info['congress_number']
-    }
+    if response.status_code != 200:
+        return f"Error {response.status_code}: {data['error']}"
 
-def ordinal(n: int):
+    results = data['results'][0]
+    state = results['address_components']['state']
+    country = results['address_components']['country']
+    if country == "CA":
+        # Skip canadian addresses
+        district = congress = None
+    else:
+        cd_info = results['fields']['congressional_districts'][0]
+        district = cd_info['district_number']
+        congress = cd_info['congress_number']
+    
+    return dict(state=state,
+                country=country,
+                district=district,
+                congress=congress)
+
+
+def ordinal(n: Optional[int]):
     # Source: https://codegolf.stackexchange.com/questions/4707/outputting-ordinal-numbers-1st-2nd-3rd#answer-4712
-    return "%d%s" % (n, "tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+    if n is None:
+        return "#N/A"
+    else:
+        return "%d%s" % (n, "tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+
 
 def main():
+    print("Getting legislators...")
     legislators = get_legislators_yaml()
-    
-    for lat, lon in coordinates:
-        district_info = get_district(lat, lon)
-        # print(f"({lat:.6f}, {lon:.6f}): {ordinal(district_info['district'])} congressional district of {district_info['state']}")
+    print("Loading coordinates...")
+    coordinates = get_coordinates()
+    print("Done!\n")
 
-        if isinstance(district_info, dict):
+    output_text = list()
+    for proj_num, proj_name, lat_lon in coordinates:
+        if int(proj_num) > 245:
+            # Reached end of list
+            break
+
+        output_text.append(f"{proj_num}: {proj_name}")
+        if lat_lon is None:
+            output_text.append("*** No coordinates provided!\n")
+            continue
+
+        if (lat_lon_match := re.match(LAT_LON_REGEX, lat_lon)):
+            lat = float(lat_lon_match.group("lat"))
+            lon = float(lat_lon_match.group("lon"))
+        else:
+            breakpoint()
+
+        district_info = get_district(lat, lon)
+        # output_text.append(f"({lat:.6f}, {lon:.6f}): {ordinal(district_info['district'])} congressional district of {district_info['state']}")
+        if isinstance(district_info, str):
+            # Error message popped up, quit and debug manually
+            output_text.append(district_info)
+            break
+        elif district_info["country"] == "CA":
+            output_text.append("*** Found Canadian address, skipping congressional district!\n")
+        else:
             key = f"{district_info['state']}-{district_info['district']}"
             rep = legislators.get(key)
             if rep:
-                print(f"Coordinates: {lat}, {lon}")
-                print(f"District: {district_info['state']}-{district_info['district']}")
-                print(f"Representative: {rep['first_name']} {rep['last_name']} ({rep['party']})\n")
+                output_text.append(f"Coordinates: {lat}, {lon}")
+                output_text.append(f"District: {district_info['state']}-{district_info['district']}")
+                output_text.append(f"Representative: {rep['first_name']} {rep['last_name']} ({rep['party']})\n")
             else:
-                print(f"No representative found for {lat}, {lon}")
-        else:
-            print(district_info)
+                output_text.append(f"No representative found for {lat}, {lon}\n")
+        
+        for line in output_text:
+            print(line)
+        with OUTPUT_FILE.open(mode='a') as out_f:
+            out_f.writelines(f"{line}\n" for line in output_text)
+        output_text = []
+
 
 if __name__ == "__main__":
     main()
