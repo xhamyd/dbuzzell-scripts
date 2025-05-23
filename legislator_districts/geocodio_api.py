@@ -80,7 +80,7 @@ def get_district(lat_lon: tuple[Optional[float], ...]) -> dict:
                   fields='cd')
 
     # params_str = "&".join(list(f"{k}={v}" for k, v in params.items()))
-    # print(f"{url}?{params_str}")
+    # output_text.append(f"{url}?{params_str}")
 
     response = requests.get(url, params=params)
     data = response.json()
