@@ -5,7 +5,7 @@ import re
 from typing import Optional
 
 from dotenv import load_dotenv
-from openpyxl import load_workbook
+from openpyxl import load_workbook, Workbook
 import requests
 import yaml
 
@@ -15,11 +15,11 @@ load_dotenv()
 GEOCODIO_API_KEY = os.environ["GEOCODIO_API_KEY"]
 LEGISLATORS_YAML_URL = "https://unitedstates.github.io/congress-legislators/legislators-current.yaml"
 COORDINATES_XLSX = Path(f"./{os.environ['COORDINATES_XLSX']}")
-OUTPUT_FILE = Path("./legislators_from_latlon.txt")
 LAT_LON_REGEX = r'^(?P<lat>[\d\.-]+)\u00B0?,\s*(?P<lon>[\d\.-]+)\u00B0?$'
+OUTPUT_FILE = Path(f"./output.xlsx")
 
 
-def get_coordinates():
+def get_coordinates() -> tuple:
     workbook = load_workbook(COORDINATES_XLSX)
     sheet = workbook.active
     if sheet is None:
@@ -29,7 +29,7 @@ def get_coordinates():
     assert data[0] == ('Project Number', 'PROJECT NAME', 'Geo Coordinates')  # assuming a fixed format for now
     assert data[1] == (None, 'TOTAL', '-')  # extra info that we don't need
 
-    return [[row_i] + list(row[1:]) for row_i, row in enumerate(data[2:], start=1)]
+    return tuple([row_i] + list(row[1:]) for row_i, row in enumerate(data[2:], start=1))
 
 
 def is_current_term(term):
@@ -50,62 +50,144 @@ def get_legislators_yaml():
 
     legislators = dict()
     for leg in data:
-        terms = leg.get('terms', [])
-        rep_terms = [t for t in terms if t.get('type') == 'rep' and is_current_term(t)]
-        if rep_terms:
-            # Use the latest current term
-            term = sorted(rep_terms, key=lambda t: t.get('start', ''), reverse=True)[0]
-            state = term.get('state')
-            district = str(term.get('district'))
-            key = f"{state}-{district}"
-            legislators[key] = {
-                'first_name': leg.get('name', {}).get('first', ''),
-                'last_name': leg.get('name', {}).get('last', ''),
-                'party': term.get('party', '')
-            }
+        # Out of all legislator terms, find all current Representatives
+        rep_terms = [t for t in leg['terms']
+                     if t['type'] == 'rep' and is_current_term(t)]
+        rep_terms.sort(key=lambda t: t['start'], reverse=True)
+
+        # Use the latest current term
+        if not rep_terms:
+            continue
+        term = rep_terms[0]
+
+        legislators[f"{term['state']}-{term['district']}"] = dict(name=leg['name'], party=term['party'])
+
     return legislators
 
 
-def get_district(lat, lon):
+def get_district(lat_lon: tuple[Optional[float], ...]) -> dict:
     """Get congressional district using Geocodio"""
+    res = dict(state=None,
+               country=None,
+               district=None)
+    if None in lat_lon:
+        # One or both coordinates are missing, skip reverse lookup
+        return res
+
     url = "https://api.geocod.io/v1.8/reverse"
-    params = {
-        'q': f"{lat},{lon}",
-        'api_key': GEOCODIO_API_KEY,
-        'fields': 'cd'
-    }
+    params = dict(q=f"{lat_lon[0]},{lat_lon[1]}",
+                  api_key=GEOCODIO_API_KEY,
+                  fields='cd')
 
     # params_str = "&".join(list(f"{k}={v}" for k, v in params.items()))
-    # output_text.append(f"{url}?{params_str}")
+    # print(f"{url}?{params_str}")
 
     response = requests.get(url, params=params)
     data = response.json()
     if response.status_code != 200:
-        return f"Error {response.status_code}: {data['error']}"
+        print(f"Error {response.status_code}: {data['error']}")
+        return res
 
     results = data['results'][0]
-    state = results['address_components']['state']
-    country = results['address_components']['country']
-    if country == "CA":
+    res['state'] = results['address_components']['state']
+    res['country'] = results['address_components']['country']
+    if res['country'] != "CA":
         # Skip canadian addresses
-        district = congress = None
-    else:
         cd_info = results['fields']['congressional_districts'][0]
-        district = cd_info['district_number']
-        congress = cd_info['congress_number']
+        res['district'] = cd_info['district_number']
+    # else:
+    #     breakpoint()
     
-    return dict(state=state,
-                country=country,
-                district=district,
-                congress=congress)
+    return res
 
 
-def ordinal(n: Optional[int]):
-    # Source: https://codegolf.stackexchange.com/questions/4707/outputting-ordinal-numbers-1st-2nd-3rd#answer-4712
+def ordinal(n: Optional[int]) -> str:
     if n is None:
         return "#N/A"
     else:
+        # Source: https://codegolf.stackexchange.com/questions/4707/outputting-ordinal-numbers-1st-2nd-3rd#answer-4712
         return "%d%s" % (n, "tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+
+
+def match_legislators_with_coords(proj_info: dict, lat_lon_str: str, legislators: dict) -> dict:
+    legis_res = dict(proj_num=proj_info['num'],
+                     proj_name=proj_info['name'])
+    print(f"{proj_info['num']}: {proj_info['name']}")
+
+    if lat_lon_str is None:
+        print("*** No coordinates provided!")
+        lat_lon = (None, None)
+    elif (lat_lon_match := re.match(LAT_LON_REGEX, lat_lon_str)):
+        lat_lon = (float(lat_lon_match.group("lat")),
+                   float(lat_lon_match.group("lon")))
+    # else:
+    #     breakpoint()
+    legis_res['lat_lon'] = lat_lon
+    print(f"Coordinates: {lat_lon}")
+
+    district_info = get_district(lat_lon)
+    state_str = "??" if district_info['state'] is None else district_info['state']
+    if district_info['country'] == "CA":
+        # Use Canada as the District Number
+        district_str = district_info['country']
+    elif district_info['district'] is None:
+        # Missing district number
+        district_str = "??"
+    else:
+        # Space formatting for even-align
+        district_str = f"{district_info['district']:>02d}"
+    district = f"{state_str}-{district_str}"
+    legis_res['district'] = district
+    print(f"District: {district}")
+
+    representative = dict(first_name=None, last_name=None, party=None)
+    if None not in (district_info['state'], district_info['district']):
+        # District lookup succeeded, find the legislator
+        key = f"{district_info['state']}-{district_info['district']}"  # STRICT KEY FORMATTING!
+        if key in legislators:
+            rep = legislators[key]
+            representative['first_name'] = rep['name']['first']
+            representative['last_name'] = rep['name']['last']
+            representative['party'] = rep['party']
+    legis_res['rep'] = representative
+
+    if representative['first_name'] is None and representative['last_name'] is None:
+        rep_name_str = "#N/A"
+    else:
+        rep_name_str = f"{legis_res['rep']['first_name']} {legis_res['rep']['last_name']}"
+    print(f"Representative: {rep_name_str} ({legis_res['rep']['party']})\n")
+
+    print()  # newline
+    return legis_res
+
+
+def write_output_xlsx(proj_coords: list[dict]):
+    wb = Workbook()
+    ws = wb.active  # Sheet1
+    assert ws is not None
+
+    # Write the headers
+    headers = ['Project Number', 'Latitude', 'Longitude', 'Congressional District', 'Representative Name', 'Representative Party']
+    for col_i, head in enumerate(headers, start=1):
+        ws.cell(row=1, column=col_i).value = head
+
+    def get_col_ind(head: str):
+        return headers.index(head) + 1  # Excel is one-indexed
+
+    # Write the project rows
+    for row_i, proj_info in enumerate(proj_coords, start=2):
+        ws.cell(row=row_i, column=get_col_ind('Project Number')).value = proj_info['proj_num']
+        ws.cell(row=row_i, column=get_col_ind('Latitude')).value = proj_info['lat_lon'][0]
+        ws.cell(row=row_i, column=get_col_ind('Longitude')).value = proj_info['lat_lon'][1]
+        ws.cell(row=row_i, column=get_col_ind('Congressional District')).value = proj_info['district']
+        if None in (proj_info['rep']['first_name'], proj_info['rep']['last_name']):
+            rep_name = "#N/A"
+        else:
+            rep_name = f"{proj_info['rep']['first_name']} {proj_info['rep']['last_name']}"
+        ws.cell(row=row_i, column=get_col_ind('Representative Name')).value = rep_name
+        ws.cell(row=row_i, column=get_col_ind('Representative Party')).value = proj_info['rep']['party']
+
+    wb.save(OUTPUT_FILE)
 
 
 def main():
@@ -115,46 +197,17 @@ def main():
     coordinates = get_coordinates()
     print("Done!\n")
 
-    output_text = list()
-    for proj_num, proj_name, lat_lon in coordinates:
+    output_info = list()
+    for proj_num, proj_name, lat_lon_str in coordinates:
         if int(proj_num) > 245:
             # Reached end of list
             break
 
-        output_text.append(f"{proj_num}: {proj_name}")
-        if lat_lon is None:
-            output_text.append("*** No coordinates provided!\n")
-            continue
+        proj_info = dict(num=proj_num, name=proj_name)
+        legis_coords = match_legislators_with_coords(proj_info, lat_lon_str, legislators)
+        output_info.append(legis_coords)
 
-        if (lat_lon_match := re.match(LAT_LON_REGEX, lat_lon)):
-            lat = float(lat_lon_match.group("lat"))
-            lon = float(lat_lon_match.group("lon"))
-        else:
-            breakpoint()
-
-        district_info = get_district(lat, lon)
-        # output_text.append(f"({lat:.6f}, {lon:.6f}): {ordinal(district_info['district'])} congressional district of {district_info['state']}")
-        if isinstance(district_info, str):
-            # Error message popped up, quit and debug manually
-            output_text.append(district_info)
-            break
-        elif district_info["country"] == "CA":
-            output_text.append("*** Found Canadian address, skipping congressional district!\n")
-        else:
-            key = f"{district_info['state']}-{district_info['district']}"
-            rep = legislators.get(key)
-            if rep:
-                output_text.append(f"Coordinates: {lat}, {lon}")
-                output_text.append(f"District: {district_info['state']}-{district_info['district']}")
-                output_text.append(f"Representative: {rep['first_name']} {rep['last_name']} ({rep['party']})\n")
-            else:
-                output_text.append(f"No representative found for {lat}, {lon}\n")
-        
-        for line in output_text:
-            print(line)
-        with OUTPUT_FILE.open(mode='a') as out_f:
-            out_f.writelines(f"{line}\n" for line in output_text)
-        output_text = []
+    write_output_xlsx(output_info)
 
 
 if __name__ == "__main__":
